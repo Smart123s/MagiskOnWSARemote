@@ -1,0 +1,81 @@
+name: Custom Build WSA
+on:
+ workflow_dispatch:
+  inputs:
+   arch:
+    type: choice
+    description: "Architecture WSA:"
+    required: true
+    options: [x64, arm64]
+    default: x64
+   release-type:
+    type: choice
+    description: "Release type of WSA. RP=Release Preview, WIS=Insider Slow, WIF=Insider Fast:"
+    required: true
+    options: [retail, RP, WIS, WIF]
+    default: RP
+   gapps-brand:
+    type: choice
+    description: "GApps brand. ”none” for no integration of GApps:"
+    required: true
+    options: [MindTheGapps, none]
+    default: MindTheGapps
+   root-sol:
+    type: choice
+    description: "Root solution. ”none” - without root:"
+    required: true
+    options: [magisk, none]
+    default: magisk
+   magisk-ver:
+    type: choice
+    description: "Magisk version:"
+    required: true
+    options: [stable, beta, canary, debug]
+    default: stable
+   remove-amazon:
+    type: choice
+    description: "Remove or keep Amazon Appstore:"
+    required: true
+    options: [--remove-amazon, Keep Amazon]
+    default: --remove-amazon
+jobs:
+  Build-WSA:
+    name: Build WSA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update;sudo apt-get install -y setools lzip wine patchelf e2fsprogs python3-pip aria2 p7zip-full attr xz-utils unzip cabextract
+          aria2c -d /usr/local/bin/ https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+          sudo chmod +x /usr/local/bin/winetricks
+          python3 -m pip install requests
+          winetricks msxml6
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Build WSA
+        run: |
+          cd ./MagiskOnWSALocal
+          scripts/build.sh \
+          --arch ${{ inputs.arch }} \
+          --release-type ${{ inputs.release-type }} \
+          ${{ inputs.remove-amazon }} \
+          --magisk-ver ${{ inputs.magisk-ver }} \
+          --gapps-brand ${{ inputs.gapps-brand }} \
+          --root-sol ${{ inputs.root-sol }}
+      - name: Archiving and compressing artifact
+        run: |
+          cd MagiskOnWSALocal/output
+          7z a -tzip -mx=4 -saa *
+      - name: Upload a Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: MagiskOnWSALocal/output/*
+          tag_name: WSA
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 1
