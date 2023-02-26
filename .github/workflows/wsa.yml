@@ -6,38 +6,31 @@ on:
     type: choice
     description: "Architecture WSA:"
     required: true
-    options: [x64, arm64]
+    options: [x64, ARM64]
     default: x64
-   release-type:
+   release_type:
     type: choice
-    description: "Release type of WSA. RP=Release Preview, WIS=Insider Slow, WIF=Insider Fast:"
+    description: "WSA Release Channel:"
     required: true
-    options: [retail, RP, WIS, WIF]
-    default: RP
-   gapps-brand:
+    options: [Retail, Release Preview, Beta, Dev]
+    default: Release Preview
+   gapps_brand:
     type: choice
-    description: "GApps brand. ”none” for no integration of GApps:"
+    description: "GApps brand. ”None” - without GApps:"
     required: true
-    options: [MindTheGapps, none]
+    options: [None, MindTheGapps]
     default: MindTheGapps
-   root-sol:
+   magisk_ver:
     type: choice
-    description: "Root solution. ”none” - without root:"
+    description: "Magisk version. ”None” - without Magisk:"
     required: true
-    options: [magisk, none]
-    default: magisk
-   magisk-ver:
-    type: choice
-    description: "Magisk version:"
+    options: [None, Stable, Beta, Canary, Debug]
+    default: Stable
+   remove_amazon:
+    description: "Remove Amazon AppStore"
     required: true
-    options: [stable, beta, canary, debug]
-    default: stable
-   remove-amazon:
-    type: choice
-    description: "Remove or keep Amazon Appstore:"
-    required: true
-    options: [--remove-amazon, Keep Amazon]
-    default: --remove-amazon
+    default: true
+    type: boolean
 jobs:
   Build-WSA:
     name: Build WSA
@@ -54,23 +47,34 @@ jobs:
         with:
           submodules: recursive
       - name: Build WSA
+        id: build_wsa
+        working-directory: MagiskOnWSALocal/scripts
         run: |
-          cd ./MagiskOnWSALocal
-          scripts/build.sh \
-          --arch ${{ inputs.arch }} \
-          --release-type ${{ inputs.release-type }} \
-          ${{ inputs.remove-amazon }} \
-          --magisk-ver ${{ inputs.magisk-ver }} \
-          --gapps-brand ${{ inputs.gapps-brand }} \
-          --root-sol ${{ inputs.root-sol }}
+          declare -A opts=( ["ARCH,x64"]="x64" ["ARCH,ARM64"]="arm64" ["RELEASE_TYPE,Retail"]="retail" ["RELEASE_TYPE,Release Preview"]="RP" ["RELEASE_TYPE,Beta"]="WIS" ["RELEASE_TYPE,Dev"]="WIF" ["MAGISK_VER,Stable"]="stable" ["MAGISK_VER,Beta"]="beta" ["MAGISK_VER,Canary"]="canary" ["MAGISK_VER,Debug"]="debug" ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps" ["GAPPS_BRAND,None"]="none" ["REMOVE_AMAZON,true"]="--remove-amazon" )
+          if [[ "${{ inputs.magisk_ver }}" != "None" ]]; then
+              ROOT_SOL="magisk"
+              MAGISK_VER="${opts[MAGISK_VER,${{ inputs.magisk_ver }}]}"
+          else
+              ROOT_SOL="none"
+              MAGISK_VER="stable"
+          fi
+              echo "arch=${opts[ARCH,${{ inputs.arch }}]}" >> $GITHUB_OUTPUT
+
+          ./build.sh \
+          --arch ${opts[ARCH,${{ inputs.arch }}]} \
+          --release-type ${opts[RELEASE_TYPE,${{ inputs.release_type }}]} \
+          ${opts[REMOVE_AMAZON,${{ inputs.remove_amazon }}]} \
+          --magisk-ver $MAGISK_VER \
+          --gapps-brand ${opts[GAPPS_BRAND,${{ inputs.gapps_brand }}]} \
+          --root-sol $ROOT_SOL
       - name: Archiving and compressing artifact
+        working-directory: MagiskOnWSALocal/output
         run: |
-          cd MagiskOnWSALocal/output
-          7z a -tzip -mx=4 -saa *
+          7z a -tzip -mx=4 -mmt=104 -saa *
       - name: Get WSA version tag
         shell: bash
         run: |
-          regex="WSA_(.*)_${{ inputs.arch }}"
+          regex="WSA_(.*)_${{ steps.build_wsa.outputs.arch }}"
           if [[ $(ls ./MagiskOnWSALocal/output/*.zip) =~ $regex ]]; then
             echo "wsaver=${BASH_REMATCH[1]}" >> $GITHUB_ENV
           else
