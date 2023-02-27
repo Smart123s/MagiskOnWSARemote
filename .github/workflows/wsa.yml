@@ -12,7 +12,7 @@ on:
     type: choice
     description: "WSA Release Channel:"
     required: true
-    options: [Retail, Release Preview, Beta, Dev]
+    options: [General Availability, Release Preview, Beta, Dev]
     default: Release Preview
    gapps_brand:
     type: choice
@@ -50,7 +50,7 @@ jobs:
         id: build_wsa
         working-directory: MagiskOnWSALocal/scripts
         run: |
-          declare -A opts=( ["ARCH,x64"]="x64" ["ARCH,ARM64"]="arm64" ["RELEASE_TYPE,Retail"]="retail" ["RELEASE_TYPE,Release Preview"]="RP" ["RELEASE_TYPE,Beta"]="WIS" ["RELEASE_TYPE,Dev"]="WIF" ["MAGISK_VER,Stable"]="stable" ["MAGISK_VER,Beta"]="beta" ["MAGISK_VER,Canary"]="canary" ["MAGISK_VER,Debug"]="debug" ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps" ["GAPPS_BRAND,None"]="none" ["REMOVE_AMAZON,true"]="--remove-amazon" )
+          declare -A opts=( ["ARCH,x64"]="x64" ["ARCH,ARM64"]="arm64" ["RELEASE_TYPE,General Availability"]="retail" ["RELEASE_TYPE,Release Preview"]="RP" ["RELEASE_TYPE,Beta"]="WIS" ["RELEASE_TYPE,Dev"]="WIF" ["MAGISK_VER,Stable"]="stable" ["MAGISK_VER,Beta"]="beta" ["MAGISK_VER,Canary"]="canary" ["MAGISK_VER,Debug"]="debug" ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps" ["GAPPS_BRAND,None"]="none" ["REMOVE_AMAZON,true"]="--remove-amazon" )
           if [[ "${{ inputs.magisk_ver }}" != "None" ]]; then
               ROOT_SOL="magisk"
               MAGISK_VER="${opts[MAGISK_VER,${{ inputs.magisk_ver }}]}"
