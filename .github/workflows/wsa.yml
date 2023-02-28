@@ -24,7 +24,7 @@ on:
     type: choice
     description: "Magisk version. ”None” - without Magisk:"
     required: true
-    options: [None, Stable, Beta, Canary, Debug]
+    options: [None, Stable, Beta, Canary, Debug, Delta Canary]
     default: Stable
    remove_amazon:
     description: "Remove Amazon AppStore"
@@ -48,25 +48,19 @@ jobs:
           submodules: recursive
       - name: Build WSA
         id: build_wsa
-        working-directory: MagiskOnWSALocal/scripts
+        working-directory: MagiskOnWSALocal
         run: |
-          declare -A opts=( ["ARCH,x64"]="x64" ["ARCH,ARM64"]="arm64" ["RELEASE_TYPE,General Availability"]="retail" ["RELEASE_TYPE,Release Preview"]="RP" ["RELEASE_TYPE,Beta"]="WIS" ["RELEASE_TYPE,Dev"]="WIF" ["MAGISK_VER,Stable"]="stable" ["MAGISK_VER,Beta"]="beta" ["MAGISK_VER,Canary"]="canary" ["MAGISK_VER,Debug"]="debug" ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps" ["GAPPS_BRAND,None"]="none" ["REMOVE_AMAZON,true"]="--remove-amazon" )
-          if [[ "${{ inputs.magisk_ver }}" != "None" ]]; then
-              ROOT_SOL="magisk"
-              MAGISK_VER="${opts[MAGISK_VER,${{ inputs.magisk_ver }}]}"
-          else
-              ROOT_SOL="none"
-              MAGISK_VER="stable"
+          declare -A opts=( ["ARCH,x64"]="x64" ["ARCH,ARM64"]="arm64" ["RELEASE_TYPE,General Availability"]="retail" ["RELEASE_TYPE,Release Preview"]="RP" ["RELEASE_TYPE,Beta"]="WIS" ["RELEASE_TYPE,Dev"]="WIF" ["MAGISK_VER,Delta Canary"]="--magisk-custom" ["MAGISK_VER,None"]="--root-sol none" ["MAGISK_VER,Stable"]="--magisk-ver stable" ["MAGISK_VER,Beta"]="--magisk-ver beta" ["MAGISK_VER,Canary"]="--magisk-ver canary" ["MAGISK_VER,Debug"]="--magisk-ver debug" ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps" ["GAPPS_BRAND,None"]="none" ["REMOVE_AMAZON,true"]="--remove-amazon" )
+          if [[ "${{ inputs.magisk_ver }}" == "Delta Canary" ]]; then
+              aria2c -d ./download -o magisk-stable.zip https://huskydg.github.io/magisk-files/app-release.apk
           fi
               echo "arch=${opts[ARCH,${{ inputs.arch }}]}" >> $GITHUB_OUTPUT
-
-          ./build.sh \
+          scripts/build.sh \
           --arch ${opts[ARCH,${{ inputs.arch }}]} \
           --release-type ${opts[RELEASE_TYPE,${{ inputs.release_type }}]} \
           ${opts[REMOVE_AMAZON,${{ inputs.remove_amazon }}]} \
-          --magisk-ver $MAGISK_VER \
-          --gapps-brand ${opts[GAPPS_BRAND,${{ inputs.gapps_brand }}]} \
-          --root-sol $ROOT_SOL
+          ${opts[MAGISK_VER,${{ inputs.magisk_ver }}]} \
+          --gapps-brand ${opts[GAPPS_BRAND,${{ inputs.gapps_brand }}]}
       - name: Archiving and compressing artifact
         working-directory: MagiskOnWSALocal/output
         run: |
