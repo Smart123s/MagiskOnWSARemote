@@ -77,6 +77,9 @@ jobs:
           else
             echo "wsaver=WSA" >> $GITHUB_ENV
           fi
+      - name: Calculate checksum (sha256)
+        working-directory: MagiskOnWSALocal/output
+        run: sha256sum *.zip > "$(ls -d *.zip)_sha256.txt"
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
