@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>magisk-on-wsa</id>
+    <version>2301.40000.4.0</version>
+    <title>Magisk on WSA (with Google Apps)</title>
+    <authors>LSPosed</authors>
+    <owners>Smart123s</owners>
+    <projectUrl>https://github.com/LSPosed/MagiskOnWSALocal</projectUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/Smart123s/chocolatey-packages@61bd736b15e2f9a1438bc70a3b4c4efc506e7c33/icons/magisk-on-wsa.png</iconUrl>
+    <copyright>Copyright 2021-2022 MagiskOnWSA contributors</copyright>
+    <licenseUrl>https://github.com/LSPosed/MagiskOnWSALocal/blob/main/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/LSPosed/MagiskOnWSALocal</projectSourceUrl>
+    <docsUrl>https://github.com/LSPosed/MagiskOnWSALocal/blob/main/README.md</docsUrl>
+    <bugTrackerUrl>https://github.com/LSPosed/MagiskOnWSALocal/issues</bugTrackerUrl>
+    <packageSourceUrl>https://github.com/Smart123s/chocolatey-packages/tree/master/magisk-on-wsa</packageSourceUrl>
+    <tags>magisk android google play store root</tags>
+    <summary>Integrate Magisk root and Google Apps (OpenGApps) into WSA (Windows Subsystem for Android)</summary>
+    <description># NOTICE: Build sources
+
+LSPosed no longer provides builds via GitHub Actions in their official repository (as their original repository was shut down because it supposedly abused GitHub Actions), so I (the magisk-on-wsa chocolatey package maintainer) created a simple script that builds the latest versions of MagiskOnWsaLocal using GitHub actions. You can verify that the builds were not altered before publishing by viewing the action runs' logs at https://github.com/Smart123s/MagiskOnWSARemote.
+
+# Magisk on WSA (with Google Apps)
+
+## Features
+- Integrate Magisk and OpenGApps in a few clicks within minutes
+- No Linux environment required for integration
+- Keep each build up to date
+- Support both ARM64 and x64
+- Support all OpenGApps variants except for aroma (aroma does not support x86_64, please use super instead)
+- Fix external storage access of DocumentUI
+- Unattended installation
+- Automatically activates developers mode in Windows 11
+- Update to new version while preserving data with one-click script
+- Merged all language packs
+- Support managing start menu icons (manually installing [WSAHelper](https://github.com/LSPosed/WSAHelper/releases/latest) to use this feature)
+
+#### Package updates
+
+New versions of this package are published automatically via the `update.ps1` script (viewable in the package source on GitHub).</description>
+  </metadata>
+  <files>
+    <file src="tools/**" target="tools" />
+  </files>
+</package>
