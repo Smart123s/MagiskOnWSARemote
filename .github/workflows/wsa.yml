@@ -20,11 +20,11 @@ on:
     required: true
     options: [None, MindTheGapps]
     default: MindTheGapps
-   magisk_ver:
+   root_ver:
     type: choice
-    description: "Magisk version. ”None” - without Magisk:"
+    description: "Root version. ”None” - without root:"
     required: true
-    options: [None, Stable, Beta, Canary, Debug, Delta Canary]
+    options: [None, Magisk (Stable), Magisk (Beta), Magisk (Canary), Magisk (Debug), Magisk Delta (Canary), KernelSU]
     default: Stable
    remove_amazon:
     description: "Remove Amazon AppStore"
@@ -53,8 +53,8 @@ jobs:
         id: build_wsa
         working-directory: MagiskOnWSALocal
         run: |
-          declare -A opts=( ["ARCH,x64"]="x64" ["ARCH,ARM64"]="arm64" ["RELEASE_TYPE,General Availability"]="retail" ["RELEASE_TYPE,Release Preview"]="RP" ["RELEASE_TYPE,Beta"]="WIS" ["RELEASE_TYPE,Dev"]="WIF" ["MAGISK_VER,Delta Canary"]="--magisk-custom" ["MAGISK_VER,None"]="--root-sol none" ["MAGISK_VER,Stable"]="--magisk-ver stable" ["MAGISK_VER,Beta"]="--magisk-ver beta" ["MAGISK_VER,Canary"]="--magisk-ver canary" ["MAGISK_VER,Debug"]="--magisk-ver debug" ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps" ["GAPPS_BRAND,None"]="none" ["REMOVE_AMAZON,true"]="--remove-amazon" )
-          if [[ "${{ inputs.magisk_ver }}" == "Delta Canary" ]]; then
+          declare -A opts=( ["ARCH,x64"]="x64" ["ARCH,ARM64"]="arm64" ["RELEASE_TYPE,General Availability"]="retail" ["RELEASE_TYPE,Release Preview"]="RP" ["RELEASE_TYPE,Beta"]="WIS" ["RELEASE_TYPE,Dev"]="WIF" ["ROOT_VER,Magisk Delta (Canary)"]="--magisk-custom" ["ROOT_VER,None"]="--root-sol none" ["ROOT_VER,KernelSU"]="--root-sol kernelsu" ["ROOT_VER,Magisk (Stable)"]="--magisk-ver stable" ["ROOT_VER,Magisk (Beta)"]="--magisk-ver beta" ["ROOT_VER,Magisk (Canary)"]="--magisk-ver canary" ["ROOT_VER,Magisk (Debug)"]="--magisk-ver debug" ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps" ["GAPPS_BRAND,None"]="none" ["REMOVE_AMAZON,true"]="--remove-amazon" )
+          if [[ "${{ inputs.root_ver }}" == "Magisk Delta (Canary)" ]]; then
             aria2c -d ./download -o magisk-stable.zip https://huskydg.github.io/magisk-files/app-release.apk
           fi
             echo "arch=${opts[ARCH,${{ inputs.arch }}]}" >> $GITHUB_OUTPUT
@@ -62,7 +62,7 @@ jobs:
           --arch ${opts[ARCH,${{ inputs.arch }}]} \
           --release-type ${opts[RELEASE_TYPE,${{ inputs.release_type }}]} \
           ${opts[REMOVE_AMAZON,${{ inputs.remove_amazon }}]} \
-          ${opts[MAGISK_VER,${{ inputs.magisk_ver }}]} \
+          ${opts[ROOT_VER,${{ inputs.root_ver }}]} \
           --gapps-brand ${opts[GAPPS_BRAND,${{ inputs.gapps_brand }}]}
       - name: Archiving and compressing artifact
         working-directory: MagiskOnWSALocal/output
