@@ -1,36 +1,51 @@
-name: Custom Build WSA
+name: Build WSA
 on:
- workflow_dispatch:
-  inputs:
-   arch:
-    type: choice
-    description: "Architecture WSA:"
-    required: true
-    options: [x64, ARM64]
-    default: x64
-   release_type:
-    type: choice
-    description: "WSA Release Channel:"
-    required: true
-    options: [General Availability, Release Preview, Beta, Dev]
-    default: Release Preview
-   gapps_brand:
-    type: choice
-    description: "GApps brand. ”None” - without GApps:"
-    required: true
-    options: [None, MindTheGapps]
-    default: MindTheGapps
-   root_ver:
-    type: choice
-    description: "Root version. ”None” - without root:"
-    required: true
-    options: [None, Magisk (Stable), Magisk (Beta), Magisk (Canary), Magisk (Debug), Magisk Delta (Canary), KernelSU]
-    default: Stable
-   remove_amazon:
-    description: "Remove Amazon AppStore"
-    required: true
-    default: true
-    type: boolean
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: 'Architecture WSA:'
+        required: true
+        default: 'x64'
+        type: choice
+        options:
+          - 'x64'
+          - 'ARM64'
+      release_type:
+        description: 'WSA Release Channel:'
+        required: true
+        default: 'Release Preview'
+        type: choice
+        options:
+          - 'General Availability'
+          - 'Release Preview'
+          - 'Beta'
+          - 'Dev'
+      gapps_brand:
+        description: 'GApps brand. "None" - without GApps:'
+        required: true
+        default: 'MindTheGapps'
+        type: choice
+        options:
+          - 'None'
+          - 'MindTheGapps'
+      root_ver:
+        description: 'Root version. "None" - without root:'
+        required: true
+        default: 'Magisk (Stable)'
+        type: choice
+        options:
+          - 'None'
+          - 'Magisk (Stable)'
+          - 'Magisk (Beta)'
+          - 'Magisk (Canary)'
+          - 'Magisk (Debug)'
+          - 'Magisk Delta (Canary)'
+          - 'KernelSU'
+      remove_amazon:
+        description: 'Remove Amazon AppStore'
+        required: true
+        default: true
+        type: boolean
 permissions:
   contents: write
   actions: write
@@ -39,12 +54,14 @@ jobs:
     name: Build WSA
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: Install dependencies
         run: |
-          sudo apt-get update;sudo apt-get install -y setools lzip wine patchelf e2fsprogs python3-pip aria2 p7zip-full attr xz-utils unzip cabextract
+          sudo apt-get update
+          sudo apt-get install -y setools lzip wine patchelf e2fsprogs python3-pip aria2 p7zip-full attr xz-utils unzip cabextract
           aria2c -d /usr/local/bin/ https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
           sudo chmod +x /usr/local/bin/winetricks
           python3 -m pip install requests
@@ -53,11 +70,28 @@ jobs:
         id: build_wsa
         working-directory: MagiskOnWSALocal
         run: |
-          declare -A opts=( ["ARCH,x64"]="x64" ["ARCH,ARM64"]="arm64" ["RELEASE_TYPE,General Availability"]="retail" ["RELEASE_TYPE,Release Preview"]="RP" ["RELEASE_TYPE,Beta"]="WIS" ["RELEASE_TYPE,Dev"]="WIF" ["ROOT_VER,Magisk Delta (Canary)"]="--magisk-custom" ["ROOT_VER,None"]="--root-sol none" ["ROOT_VER,KernelSU"]="--root-sol kernelsu" ["ROOT_VER,Magisk (Stable)"]="--magisk-ver stable" ["ROOT_VER,Magisk (Beta)"]="--magisk-ver beta" ["ROOT_VER,Magisk (Canary)"]="--magisk-ver canary" ["ROOT_VER,Magisk (Debug)"]="--magisk-ver debug" ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps" ["GAPPS_BRAND,None"]="none" ["REMOVE_AMAZON,true"]="--remove-amazon" )
+          declare -A opts=(
+            ["ARCH,x64"]="x64"
+            ["ARCH,ARM64"]="arm64"
+            ["RELEASE_TYPE,General Availability"]="retail"
+            ["RELEASE_TYPE,Release Preview"]="RP"
+            ["RELEASE_TYPE,Beta"]="WIS"
+            ["RELEASE_TYPE,Dev"]="WIF"
+            ["ROOT_VER,Magisk Delta (Canary)"]="--magisk-custom"
+            ["ROOT_VER,None"]="--root-sol none"
+            ["ROOT_VER,KernelSU"]="--root-sol kernelsu"
+            ["ROOT_VER,Magisk (Stable)"]="--magisk-ver stable"
+            ["ROOT_VER,Magisk (Beta)"]="--magisk-ver beta"
+            ["ROOT_VER,Magisk (Canary)"]="--magisk-ver canary"
+            ["ROOT_VER,Magisk (Debug)"]="--magisk-ver debug"
+            ["GAPPS_BRAND,MindTheGapps"]="MindTheGapps"
+            ["GAPPS_BRAND,None"]="none"
+            ["REMOVE_AMAZON,true"]="--remove-amazon"
+          )
           if [[ "${{ inputs.root_ver }}" == "Magisk Delta (Canary)" ]]; then
             aria2c -d ./download -o magisk-stable.zip https://huskydg.github.io/magisk-files/app-release.apk
           fi
-            echo "arch=${opts[ARCH,${{ inputs.arch }}]}" >> $GITHUB_OUTPUT
+          echo "arch=${opts[ARCH,${{ inputs.arch }}]}" >> $GITHUB_OUTPUT
           scripts/build.sh \
           --arch ${opts[ARCH,${{ inputs.arch }}]} \
           --release-type ${opts[RELEASE_TYPE,${{ inputs.release_type }}]} \
@@ -67,9 +101,8 @@ jobs:
       - name: Archiving and compressing artifact
         working-directory: MagiskOnWSALocal/output
         run: |
-          7z a -tzip -mx=4 -mmt=104 -saa *
+          7z a -tzip -mx4 -mmt104 -saa *
       - name: Get WSA version tag
-        shell: bash
         run: |
           regex="WSA_(.*)_${{ steps.build_wsa.outputs.arch }}"
           if [[ $(ls ./MagiskOnWSALocal/output/*.zip) =~ $regex ]]; then
