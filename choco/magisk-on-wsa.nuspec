@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>magisk-on-wsa</id>
-    <version>2301.40000.4.0</version>
+    <version>{VERSION}</version>
     <title>Magisk on WSA (with Google Apps)</title>
     <authors>LSPosed</authors>
     <owners>Smart123s</owners>
@@ -14,12 +14,12 @@
     <projectSourceUrl>https://github.com/LSPosed/MagiskOnWSALocal</projectSourceUrl>
     <docsUrl>https://github.com/LSPosed/MagiskOnWSALocal/blob/main/README.md</docsUrl>
     <bugTrackerUrl>https://github.com/LSPosed/MagiskOnWSALocal/issues</bugTrackerUrl>
-    <packageSourceUrl>https://github.com/Smart123s/chocolatey-packages/tree/master/magisk-on-wsa</packageSourceUrl>
+    <packageSourceUrl>https://github.com/Smart123s/MagiskOnWSARemote/tree/main/choco</packageSourceUrl>
     <tags>magisk android google play store root</tags>
     <summary>Integrate Magisk root and Google Apps (OpenGApps) into WSA (Windows Subsystem for Android)</summary>
     <description># NOTICE: Build sources
 
-LSPosed no longer provides builds via GitHub Actions in their official repository (as their original repository was shut down because it supposedly abused GitHub Actions), so I (the magisk-on-wsa chocolatey package maintainer) created a simple script that builds the latest versions of MagiskOnWsaLocal using GitHub actions. You can verify that the builds were not altered before publishing by viewing the action runs' logs at https://github.com/Smart123s/MagiskOnWSARemote.
+LSPosed no longer provides builds via GitHub Actions in their official repository (as their original repository was shut down because it supposedly abused GitHub Actions), so I (the magisk-on-wsa chocolatey package maintainer) decided to take use of a simple script that builds the latest versions of MagiskOnWsaLocal using GitHub actions. You can verify that the builds were not altered before publishing by viewing the action runs' logs at https://github.com/Smart123s/MagiskOnWSARemote.
 
 # Magisk on WSA (with Google Apps)
 

@@ -126,3 +126,9 @@ jobs:
           files: MagiskOnWSALocal/output/*
           tag_name: WSA-${{ env.wsaver }}
           name: WSA ${{ env.wsaver }}
+  choco:
+    permissions: write-all
+    needs: Build-WSA
+    uses: ./.github/workflows/choco.yml
+    secrets: inherit
+    if: github.repository == 'Smart123s/MagiskOnWSARemote' && inputs.arch == 'x64'

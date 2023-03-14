@@ -6,8 +6,8 @@ $packageArgs = @{
   packageName   = $env:ChocolateyPackageName
   UnzipLocation  = "$toolsDir"
 
-  url64         = 'https://github.com/Smart123s/MagiskOnWSARemote/releases/download/WSA-2301.40000.4.0/WSA_2301.40000.4.0_x64_Release-Nightly-with-magisk-25.2.25200.-stable-MindTheGapps-13.0-RemovedAmazon.zip'
-  checksum64    = 'b891ba1fe1041f2346f15ea066d65482b857a224465c937caea456246b951db2'
+  url64         = '{URL64}'
+  checksum64    = '{SHA256CHECKSUM64}'
 
   checksumType  = 'sha256'
 
@@ -22,7 +22,7 @@ if ( [Environment]::OSVersion.Version.Build -lt 22000) {
 Install-ChocolateyZipPackage @packageArgs
 
 # Get the name of the extracted folder
-$folderName = 'WSA_2301.40000.4.0_x64_Release-Nightly-with-magisk-25.2(25200)-stable-MindTheGapps-13.0-RemovedAmazon'
+$folderName = ls $toolsDir | ? name -match "WSA.*" | select -Last 1
 
 # Get name of install script
 $installScript = Join-Path "$toolsDir\$folderName" "Install.ps1"
