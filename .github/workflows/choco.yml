@@ -1,0 +1,49 @@
+name: choco
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  choco:
+    runs-on: windows-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v3
+      - uses: oprypin/find-latest-tag@v1
+        with:
+          repository: ${{ github.repository	 }}
+          releases-only: true
+        id: latesttag
+      - name: Update package values
+        shell: bash
+        id: meta
+        run: |
+          export LC_ALL=C.UTF-8
+          assets_url="https://github.com/${{ github.repository }}/releases/expanded_assets/${{ steps.latesttag.outputs.tag }}"
+          download_url="https://github.com/$(curl $assets_url | grep "<a href" | grep -oP 'a href="\K.+?(?=" rel)' | grep 'x64_Release' | grep -v '.txt')"
+          echo "download url: $download_url"
+          file_name=$(basename $download_url)
+          sed -i "s#{URL64}#${download_url}#g" "choco/tools/chocolateyinstall.ps1"
+
+          checksum_url="${download_url}_sha256.txt"
+          sha256=$(curl -L $checksum_url | cut -d " " -f 1 )
+          echo "sha256: $sha256"
+          sed -i "s/{SHA256CHECKSUM64}/${sha256:0:64}/g" "choco/tools/chocolateyinstall.ps1"
+
+          version=$(echo $file_name | cut -d "_" -f 2)
+          sed -i "s/{VERSION}/${version}/g" "choco/magisk-on-wsa.nuspec"
+          echo "::set-output name=version::$version"
+      - name: Pack Release
+        uses: crazy-max/ghaction-chocolatey@v2
+        with:
+          args: pack choco/magisk-on-wsa.nuspec --outputdirectory choco
+      - name: Upload nupkg to Actions
+        uses: actions/upload-artifact@v3
+        with:
+          name: magisk-on-wsa.${{ steps.meta.outputs.version }}.nupkg
+          path: choco/*.nupkg
+      - name: Upload Release
+        uses: crazy-max/ghaction-chocolatey@v2
+        with:
+          args: push choco/magisk-on-wsa.${{ steps.meta.outputs.version }}.nupkg -s https://nuget.cloudsmith.io/smart123s/choco/v2 -k ${{ secrets.CHOCO_KEY }}
