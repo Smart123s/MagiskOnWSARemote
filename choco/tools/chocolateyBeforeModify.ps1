@@ -1,9 +1,5 @@
 ﻿$ErrorActionPreference = 'Stop';
 
-# Remove version 2207.40000.8.0
-$oldDir = "$(Get-ToolsLocation)\WSA"
-if (Test-Path $oldDir) {
-    Remove-Item $oldDir -Recurse -Force
-}
+taskkill /IM WsaClient.exe
 
 Uninstall-ChocolateyZipPackage $env:ChocolateyPackageName "WSA*.zip"
