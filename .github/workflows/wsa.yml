@@ -47,7 +47,33 @@ on:
         required: true
         default: true
         type: boolean
-
+  workflow_call:
+    inputs:
+      arch:
+        description: 'WSA Architecture:'
+        required: true
+        default: 'x64'
+        type: string
+      release_type:
+        description: 'WSA Release Channel:'
+        required: true
+        default: 'Release Preview'
+        type: string
+      gapps_brand:
+        description: 'GApps Brand:'
+        required: true
+        default: 'MindTheGapps'
+        type: string
+      root_ver:
+        description: 'Root Solution:'
+        required: true
+        default: 'Magisk (Stable)'
+        type: string
+      remove_amazon:
+        description: 'Remove Amazon Appstore'
+        required: true
+        default: true
+        type: boolean
 permissions:
   contents: write
   actions: write
