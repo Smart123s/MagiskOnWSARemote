@@ -1,0 +1,61 @@
+name: Update Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 16 * * *"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: oprypin/find-latest-tag@v1
+        with:
+          repository: ${{ github.repository	 }}
+          releases-only: true
+        id: latesttag
+      - name: Get latest WSA ver
+        run: |
+          echo "wsaver=$(python get_latest_wsa_version.py 'x64' 'RP')" >> $GITHUB_ENV
+      - name: Should build?
+        id: should_build
+        shell: bash
+        run: |
+          if [ "${{ steps.latesttag.outputs.tag }}" = "WSA-${{ env.wsaver }}" ]; then
+            echo "dont build!"
+            echo "SHOULD_BUILD=0" >> $GITHUB_OUTPUT
+          else
+            echo "build!"
+            echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
+          fi
+    outputs:
+      SHOULD_BUILD: ${{ steps.should_build.outputs.SHOULD_BUILD }}
+
+  build_x64:
+    permissions: write-all
+    needs: check
+    uses: ./.github/workflows/wsa.yml
+    if: ${{ needs.check.outputs.SHOULD_BUILD == 1 }}
+    secrets: inherit
+    with:
+      arch: 'x64'
+      release_type: 'Release Preview'
+      gapps_brand: 'MindTheGapps'
+      root_ver: 'Magisk (Stable)'
+      remove_amazon: true
+  build_arm64:
+    permissions: write-all
+    needs: check
+    uses: ./.github/workflows/wsa.yml
+    if: ${{ needs.check.outputs.SHOULD_BUILD == 1 }}
+    secrets: inherit
+    with:
+      arch: 'arm64'
+      release_type: 'Release Preview'
+      gapps_brand: 'MindTheGapps'
+      root_ver: 'Magisk (Stable)'
+      remove_amazon: true
