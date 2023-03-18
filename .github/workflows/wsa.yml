@@ -1,9 +1,10 @@
 name: Build WSA
 on:
   workflow_dispatch:
+
     inputs:
       arch:
-        description: 'Architecture WSA:'
+        description: 'WSA Architecture:'
         required: true
         default: 'x64'
         type: choice
@@ -21,7 +22,7 @@ on:
           - 'Beta'
           - 'Dev'
       gapps_brand:
-        description: 'GApps brand. "None" - without GApps:'
+        description: 'GApps Brand:'
         required: true
         default: 'MindTheGapps'
         type: choice
@@ -29,7 +30,7 @@ on:
           - 'None'
           - 'MindTheGapps'
       root_ver:
-        description: 'Root version. "None" - without root:'
+        description: 'Root Solution:'
         required: true
         default: 'Magisk (Stable)'
         type: choice
@@ -42,30 +43,30 @@ on:
           - 'Magisk Delta (Canary)'
           - 'KernelSU'
       remove_amazon:
-        description: 'Remove Amazon AppStore'
+        description: 'Remove Amazon Appstore'
         required: true
         default: true
         type: boolean
+
 permissions:
   contents: write
   actions: write
+
 jobs:
   Build-WSA:
     name: Build WSA
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           submodules: recursive
+
       - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y setools lzip wine patchelf e2fsprogs python3-pip aria2 p7zip-full attr xz-utils unzip cabextract
-          aria2c -d /usr/local/bin/ https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
-          sudo chmod +x /usr/local/bin/winetricks
-          python3 -m pip install requests
-          winetricks msxml6
+        working-directory: MagiskOnWSALocal
+        run: scripts/install_deps.sh
+
       - name: Build WSA
         id: build_wsa
         working-directory: MagiskOnWSALocal
@@ -88,34 +89,42 @@ jobs:
             ["GAPPS_BRAND,None"]="none"
             ["REMOVE_AMAZON,true"]="--remove-amazon"
           )
+
           if [[ "${{ inputs.root_ver }}" == "Magisk Delta (Canary)" ]]; then
             aria2c -d ./download -o magisk-stable.zip https://huskydg.github.io/magisk-files/app-release.apk
           fi
+
           echo "arch=${opts[ARCH,${{ inputs.arch }}]}" >> $GITHUB_OUTPUT
+
           scripts/build.sh \
-          --arch ${opts[ARCH,${{ inputs.arch }}]} \
-          --release-type ${opts[RELEASE_TYPE,${{ inputs.release_type }}]} \
-          ${opts[REMOVE_AMAZON,${{ inputs.remove_amazon }}]} \
-          ${opts[ROOT_VER,${{ inputs.root_ver }}]} \
-          --gapps-brand ${opts[GAPPS_BRAND,${{ inputs.gapps_brand }}]}
+            --arch ${opts[ARCH,${{ inputs.arch }}]} \
+            --release-type ${opts[RELEASE_TYPE,${{ inputs.release_type }}]} \
+            ${opts[REMOVE_AMAZON,${{ inputs.remove_amazon }}]} \
+            ${opts[ROOT_VER,${{ inputs.root_ver }}]} \
+            --gapps-brand ${opts[GAPPS_BRAND,${{ inputs.gapps_brand }}]}
+
       - name: Archiving and compressing artifact
         working-directory: MagiskOnWSALocal/output
         run: |
           7z a -tzip -mx4 -mmt104 -saa *
+          echo "wsa_name=$(basename *zip)" >> $GITHUB_ENV
+
       - name: Get WSA version tag
         run: |
           regex="WSA_(.*)_${{ steps.build_wsa.outputs.arch }}"
-          if [[ $(ls ./MagiskOnWSALocal/output/*.zip) =~ $regex ]]; then
+          if [[ '${{ env.wsa_name }}' =~ $regex ]]; then
             echo "wsaver=${BASH_REMATCH[1]}" >> $GITHUB_ENV
           else
             echo "wsaver=WSA" >> $GITHUB_ENV
           fi
+
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          files: MagiskOnWSALocal/output/*
+          files: MagiskOnWSALocal/output/${{ env.wsa_name }}
           tag_name: WSA-${{ env.wsaver }}
           name: WSA ${{ env.wsaver }}
+
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
         with:
