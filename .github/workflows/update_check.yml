@@ -54,7 +54,7 @@ jobs:
     if: ${{ needs.check.outputs.SHOULD_BUILD == 1 }}
     secrets: inherit
     with:
-      arch: 'arm64'
+      arch: 'ARM64'
       release_type: 'Release Preview'
       gapps_brand: 'MindTheGapps'
       root_ver: 'Magisk (Stable)'
