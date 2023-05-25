@@ -99,6 +99,7 @@ jobs:
         id: build_wsa
         working-directory: MagiskOnWSALocal
         run: |
+          chmod +x scripts/build.sh
           declare -A opts=(
             ["ARCH,x64"]="x64"
             ["ARCH,ARM64"]="arm64"
