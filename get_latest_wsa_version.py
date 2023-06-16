@@ -74,3 +74,4 @@ for node in doc.getElementsByTagName('Files'):
     if re.match(f"MicrosoftCorporationII\.WindowsSubsystemForAndroid_.*\.msixbundle", filename):
         wsa_long_ver = re.search(u'\d{4}.\d{5}.\d{1,}.\d{1,}', filename).group()
         print(f'{wsa_long_ver}', flush=True)
+        exit(0)
