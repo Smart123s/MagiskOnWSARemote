@@ -33,17 +33,18 @@ jobs:
 
           version=$(echo $file_name | cut -d "_" -f 2)
           sed -i "s/{VERSION}/${version}/g" "choco/magisk-on-wsa.nuspec"
-          echo "::set-output name=version::$version"
+          echo "Version: $version"
+          echo "version=$version" >> $GITHUB_ENV
       - name: Pack Release
         uses: crazy-max/ghaction-chocolatey@v2
         with:
-          args: pack choco/magisk-on-wsa.nuspec --outputdirectory choco
+          args: pack choco/magisk-on-wsa.nuspec --outputdirectory .
       - name: Upload nupkg to Actions
         uses: actions/upload-artifact@v3
         with:
-          name: magisk-on-wsa.${{ steps.meta.outputs.version }}.nupkg
-          path: choco/*.nupkg
+          name: magisk-on-wsa.${{ env.version }}.nupkg
+          path: "*.nupkg"
       - name: Upload Release
         uses: crazy-max/ghaction-chocolatey@v2
         with:
-          args: push choco/magisk-on-wsa.${{ steps.meta.outputs.version }}.nupkg -s https://nuget.cloudsmith.io/smart123s/choco/v2 -k ${{ secrets.CHOCO_KEY }}
+          args: push -s https://nuget.cloudsmith.io/smart123s/choco/v2 -k ${{ secrets.CHOCO_KEY }}
