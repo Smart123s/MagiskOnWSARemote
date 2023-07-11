@@ -13,24 +13,28 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: oprypin/find-latest-tag@v1
+      - name: Get latest WSA version (GitHub Releases)
+        uses: oprypin/find-latest-tag@v1
         with:
           repository: ${{ github.repository	 }}
           releases-only: true
         id: latesttag
-      - name: Get latest WSA ver
+      - name: Get latest WSA version (Microsoft Store)
         run: |
           echo "wsaver=$(python get_latest_wsa_version.py 'x64' 'RP')" >> $GITHUB_ENV
       - name: Should build?
         id: should_build
         shell: bash
         run: |
-          if [ "${{ steps.latesttag.outputs.tag }}" = "WSA-${{ env.wsaver }}" ]; then
-            echo "dont build!"
-            echo "SHOULD_BUILD=0" >> $GITHUB_OUTPUT
-          else
-            echo "build!"
+          GHVER=$(echo ${{ steps.latesttag.outputs.tag }} | cut -c 5-)
+          echo "Microsoft Store Version: ${{ env.wsaver }}"
+          echo "GitHub Releases Version: $GHVER"
+          if $(dpkg --compare-versions "$GHVER" "lt" "${{ env.wsaver }}"); then
+            echo "Newer version is available. Building it."
             echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
+          else
+            echo "Skipping build. Same (or newer) build available on GitHub Releases."
+            echo "SHOULD_BUILD=0" >> $GITHUB_OUTPUT
           fi
     outputs:
       SHOULD_BUILD: ${{ steps.should_build.outputs.SHOULD_BUILD }}
