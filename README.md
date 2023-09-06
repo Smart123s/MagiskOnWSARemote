@@ -1,3 +1,15 @@
+## Repository archival
+
+The package sources (and not the repo) has been moved.
+
+For releases go to https://github.com/YT-Advanced/WSA-Script/releases
+
+For the choco package sources go to https://github.com/Smart123s/chocolatey-packages/tree/selfhost/magisk-on-wsa
+
+The choco repository mentined below is **still maintained**.
+
+## Original readme
+
 > ⚠️Notice: This repository is a fork and will be force-pushed on a regular basis.
 
 ### Installation via Chocolatey
